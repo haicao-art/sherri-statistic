@@ -1,0 +1,13 @@
+{
+  "name": "sherri/statistic",
+  "type": "library",
+  "license": "MIT",
+  "description": "Webman plugin sherri/statistic",
+  "require": {
+  },
+  "autoload": {
+    "psr-4": {
+      "Sherri\\Statistic\\": "src"
+    }
+  }
+}
