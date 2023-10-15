@@ -4,6 +4,10 @@
   "license": "MIT",
   "description": "Webman plugin sherri/statistic",
   "require": {
+    "php": ">=7.2",
+    "ext-json": "*",
+    "workerman/workerman": "^4.0.4 || ^5.0.0",
+    "psr/container": ">=1.0"
   },
   "autoload": {
     "psr-4": {
