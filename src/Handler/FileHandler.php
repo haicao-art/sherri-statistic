@@ -14,36 +14,34 @@
 
 namespace Sherri\Statistic\Handler;
 
-
 use support\Log;
 use Workerman\Timer;
 
 class FileHandler implements HandlerInterface
 {
-
     /**
      * 最大日志buffer，大于这个值就写磁盘
      * @var integer
      */
-    const MAX_LOG_BUFFER_SIZE = 1024000;
+    public const MAX_LOG_BUFFER_SIZE = 1024000;
 
     /**
      * 多长时间写一次数据到磁盘
      * @var integer
      */
-    const LOG_FLUSH_INTERVAL = 60;
+    public const LOG_FLUSH_INTERVAL = 60;
 
     /**
      * 多长时间清理一次老的磁盘数据
      * @var integer
      */
-    const LOG_CLEAN_INTERVAL = 86400;
+    public const LOG_CLEAN_INTERVAL = 86400;
 
     /**
      * 数据多长时间过期
      * @var integer
      */
-    const DATA_EXPIRE_INTERVAL = 1296000;
+    public const DATA_EXPIRE_INTERVAL = 1296000;
 
     /**
      * 统计数据
@@ -88,7 +86,7 @@ class FileHandler implements HandlerInterface
     protected static function initDirectory(string $directory)
     {
         if(!is_dir($directory)) {
-            if($directory[strlen($directory)-1] !== DIRECTORY_SEPARATOR) {
+            if($directory[strlen($directory) - 1] !== DIRECTORY_SEPARATOR) {
                 throw new \InvalidArgumentException('The folder must end with /');
             }
             mkdir($directory, 0777, true);
@@ -123,17 +121,17 @@ class FileHandler implements HandlerInterface
 
         $this->collectStatistics($project, $type, $action, $ip, $cost_time, $success, $code);
 
-        $this->logBuffer .= date('Y-m-d H:i:s', $time)."\t$ip\t$project\t$action\t$success\tcode:$code\t$cost_time\tmsg:$msg\n";
-        if(strlen($this->logBuffer) >= self::MAX_LOG_BUFFER_SIZE)
-        {
-            $this->persist();
+        $this->logBuffer .= date('Y-m-d H:i:s', $time) . "\t$ip\t$project\t$action\t$success\tcode:$code\t$cost_time\tmsg:$msg\n";
+        if(strlen($this->logBuffer) >= self::MAX_LOG_BUFFER_SIZE) {
+            $this->persistLogger();
         }
     }
 
     /**
      * 定时写入磁盘
      */
-    public function autoPersist() {
+    public function autoPersist()
+    {
         Timer::add(static::LOG_FLUSH_INTERVAL, array($this, 'persistLogger'));
         Timer::add(static::LOG_FLUSH_INTERVAL, array($this, 'persistStatistics'));
 
@@ -144,12 +142,13 @@ class FileHandler implements HandlerInterface
     /**
      * 日志数据持久化
      */
-    public function persistLogger() {
+    public function persistLogger()
+    {
         if(empty($this->logBuffer)) {
             return;
         }
         try {
-            file_put_contents(static::$logDir . date('Y-m-d'), $this->logBuffer, FILE_APPEND|LOCK_EX);
+            file_put_contents(static::$logDir . date('Y-m-d'), $this->logBuffer, FILE_APPEND | LOCK_EX);
         } catch (\Exception $e) {
             Log::error(sprintf('日志数据持久化异常:%s', $e->getMessage()));
         }
@@ -159,7 +158,8 @@ class FileHandler implements HandlerInterface
     /**
      * 持久化统计数据
      */
-    public function persistStatistics() {
+    public function persistStatistics()
+    {
         $time = time();
         foreach ($this->statisticData as $ip => $data) {
             foreach ($data as $project => $items) {
@@ -171,7 +171,7 @@ class FileHandler implements HandlerInterface
                 foreach($items as $action => $value) {
                     $logger = sprintf("%s\t%s\t%s\t%s\t%s\t%s\t%s\n", $ip, $time, $value['success_count'], $value['success_cost_time'], $value['fail_count'], $value['fail_cost_time'], json_encode($value['code']));
                     try {
-                        file_put_contents($file_dir . DIRECTORY_SEPARATOR . $action . date('Y-m-d'), $logger, FILE_APPEND|LOCK_EX);
+                        file_put_contents($file_dir . DIRECTORY_SEPARATOR . $action . date('Y-m-d'), $logger, FILE_APPEND | LOCK_EX);
                     } catch (\Exception $e) {
                         Log::error(sprintf('统计数据持久化异常:%s', $e->getMessage()));
                     }
@@ -194,10 +194,10 @@ class FileHandler implements HandlerInterface
 
     /**
      * 清除磁盘数据
-     * @param null $file
+     * @param string $file
      * @param int $exp_time
      */
-    public function gc($file = null, $exp_time = 86400)
+    public function gc(string $file = '', $exp_time = 86400)
     {
         $time_now = time();
         if(is_file($file)) {
@@ -228,7 +228,7 @@ class FileHandler implements HandlerInterface
             $projects_name_array[$project] = array();
             if($current_project == $project) {
                 $all_actions = array();
-                foreach (glob(static::$statisticDir . $current_project . '/*') as $file){
+                foreach (glob(static::$statisticDir . $current_project . '/*') as $file) {
                     if(is_dir($file)) {
                         continue;
                     }
@@ -251,7 +251,8 @@ class FileHandler implements HandlerInterface
      * @param int $success
      * @param string $code
      */
-    protected function collectStatistics(string $project, string $type, string $action, string $ip, string $cost_time, int $success, string $code) {
+    protected function collectStatistics(string $project, string $type, string $action, string $ip, string $cost_time, int $success, string $code)
+    {
         if(!isset($this->statisticData[$ip])) {
             $this->statisticData[$ip] = array();
         }

@@ -12,14 +12,12 @@
  * Copyright (c) 2023 by $, All Rights Reserved.
  */
 
-
 namespace Sherri\Statistic\Handler;
-
 
 interface HandlerInterface
 {
     //gc
-    public function gc($file = null, $exp_time = 86400);
+    public function gc(string $file, $exp_time = 86400);
 
     //read
     public function read();
